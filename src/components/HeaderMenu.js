@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 
 import { useLogout } from "../hooks/useLogout";
 
+const lang = localStorage.getItem("language");
+
 const HeaderMenu = (props) => {
   const { logout } = useLogout();
 
@@ -18,7 +20,7 @@ const HeaderMenu = (props) => {
             <Form.Control
               id='searchInput'
               type='search'
-              placeholder='Type to search items or collections'
+              placeholder={lang === "eng" ? "Search items" : "Поиск записей"}
               className='navbar-search'
               aria-label='Search'
               onChange={props.searchHandler}
@@ -32,7 +34,7 @@ const HeaderMenu = (props) => {
                 variant='btn btn-outline-light'
                 onClick={props.searchHandler}
               >
-                Search
+                {lang === "eng" ? "Search" : "Поиск"}
               </Button>
             </Link>
           </Form>
@@ -42,14 +44,14 @@ const HeaderMenu = (props) => {
           <Link to='/'>
             {" "}
             <Button className='app-menu-top__btn' variant='btn btn-outline-light'>
-              Home
+              {lang === "eng" ? "Home" : "Домой"}
             </Button>
           </Link>
           {!props.user && (
             <Link to='/login'>
               {" "}
               <Button className='app-menu-top__btn' variant='btn btn-outline-light'>
-                Login
+                {lang === "eng" ? "Login" : "Логин"}
               </Button>
             </Link>
           )}
@@ -57,7 +59,7 @@ const HeaderMenu = (props) => {
             <Link to='/register'>
               {" "}
               <Button className='app-menu-top__btn' variant='btn btn-outline-light'>
-                Register
+                {lang === "eng" ? "Register" : "Регистрация"}
               </Button>
             </Link>
           )}
@@ -72,11 +74,11 @@ const HeaderMenu = (props) => {
               variant='outline-light'
             >
               <Dropdown.Item eventKey='1' as={Link} to='/account'>
-                My account
+                {lang === "eng" ? "My account" : "Мой аккаунт"}
               </Dropdown.Item>
               <Dropdown.Divider />
               <Dropdown.Item eventKey='2' onClick={handleLogout}>
-                Logout
+                {lang === "eng" ? "Logout" : "Выход"}
               </Dropdown.Item>
             </DropdownButton>
           )}

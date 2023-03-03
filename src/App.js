@@ -2,18 +2,21 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import { useUsersContext } from "./hooks/useUsersContext";
 import { useCollectionsContext } from "./hooks/useCollectionsContext";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { redirect, Route, Routes, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Home from "./pages/Home";
 import RegistrationForm from "./pages/RegistrationForm";
 import LoginForm from "./pages/LoginForm";
 import HeaderMenu from "./components/HeaderMenu";
 import Account from "./pages/Account";
-import Items from "./components/Items";
+import Items from "./pages/Items";
 import dayjs from "dayjs";
 import { useAuthContext } from "./hooks/useAuthContext";
 import { useItemsContext } from "./hooks/useItemsContext";
 import Search from "./pages/Search";
+import { Link, Switch, Typography } from "@mui/material";
+import { useLogout } from "./hooks/useLogout";
+import { Button } from "react-bootstrap";
 
 function camelize(str) {
   return str
@@ -25,6 +28,7 @@ function camelize(str) {
 }
 
 function App() {
+  const { logout } = useLogout();
   const { user } = useAuthContext();
   const { users, dispatchUsers } = useUsersContext();
   const { collections, dispatchCollections } = useCollectionsContext();
@@ -37,11 +41,10 @@ function App() {
   const [copyCollection, setCopyCollection] = useState();
   const [collectionsCFError, setCollectionsCFError] = useState("");
   const [collectionsModalVisibility, setCollectionsModalVisibility] = useState(false);
-  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deleteDialogCollections, setDeleteDialogCollections] = useState(false);
   // Items
   const { items, dispatchItems } = useItemsContext();
   const [addingItem, setAddingItem] = useState(false);
-  const [openItem, setOpenItem] = useState({});
   const [checkedItems, setCheckedItems] = useState([]);
   const [checkedAllItems, setCheckedAllItems] = useState(false);
   const [deleteDialogItems, setDeleteDialogItems] = useState(false);
@@ -55,9 +58,30 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
+  const [language, setLanguage] = useState(localStorage.getItem("language"));
+
   const tags = [];
 
   const navigate = useNavigate();
+
+  useEffect(() => {});
+
+  const testThenLogout = () => {
+    console.log("Test started");
+    getUsers();
+
+    if (user && users && !users.filter((u) => u._id === user._id)[0]) {
+      console.log("Logging out, user deleted");
+      logout();
+      navigate("/");
+      return;
+    }
+    if (user && users && !users.filter((u) => u._id === user._id)[0].status) {
+      console.log("Logging out");
+      logout();
+      navigate("/");
+    }
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -82,6 +106,7 @@ function App() {
   }, [dispatchCollections]);
 
   const usersHandler = (e, input) => {
+    testThenLogout();
     const id = e.currentTarget?.id;
     if (id === "usersUpdateAdminBtn") {
       const userUpdate = JSON.parse(JSON.stringify(input));
@@ -95,7 +120,8 @@ function App() {
     }
     if (id === "userRemoveBtn") {
       checkedUsers.map((id) => deleteUser(id));
-      getUsers(activeCollection);
+      setCheckedUsers([]);
+      getUsers();
       deleteDialogUsersHandler();
     }
   };
@@ -123,7 +149,6 @@ function App() {
     }
     if (response.ok) {
       dispatchUsers({ type: "PATCH_USER", payload: json });
-      getUsers();
     }
   };
 
@@ -145,31 +170,35 @@ function App() {
       collections.forEach((el) => {
         if (el.author === id) deleteCollection(el._id);
       });
+      getUsers();
     }
   };
 
   const checkAllUsersHandler = (e) => {
-    if (!checkedAllUsers) {
-      setCheckedUsers(users.filter((u) => u._id !== user._id).map((u) => u._id));
-      setCheckedAllUsers(true);
+    if (e.target.checked) {
+      const newSelected = users.filter((u) => u._id !== user._id).map((u) => u._id);
+      console.log(newSelected);
+      setCheckedUsers(newSelected);
+      return;
     }
-    if (checkedAllUsers) {
-      e.currentTarget.checked = false;
-      setCheckedUsers([]);
-      setCheckedAllUsers(false);
-    }
+    setCheckedUsers([]);
   };
 
-  const checkUserHandler = (e) => {
-    if (e.target.checked) {
-      setCheckedUsers((prev) => [...prev, e.target.id]);
-      if (checkedUsers.length === users.length) setCheckedAllUsers(true);
+  const checkUserHandler = (e, id) => {
+    const selectedIndex = checkedUsers.indexOf(id);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(checkedUsers, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(checkedUsers.slice(1));
+    } else if (selectedIndex === checkedUsers.length - 1) {
+      newSelected = newSelected.concat(checkedUsers.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(checkedUsers.slice(0, selectedIndex), checkedUsers.slice(selectedIndex + 1));
     }
 
-    if (!e.target.checked) {
-      setCheckedUsers(checkedUsers.filter((el) => el !== e.target.id));
-      setCheckedAllUsers(false);
-    }
+    setCheckedUsers(newSelected);
   };
 
   const deleteDialogUsersHandler = () => {
@@ -177,6 +206,7 @@ function App() {
   };
 
   const collectionsHandler = (e, input, option) => {
+    testThenLogout();
     const id = e.currentTarget?.id;
     const value = e.currentTarget?.value;
 
@@ -189,8 +219,7 @@ function App() {
       setActiveCollection({});
     }
     if (id === "collectionModalCustomFieldRemoveBtn") {
-      setDeleteDialog(false);
-      console.log(value);
+      setDeleteDialogCollections(false);
       setActiveCollection((prev) => {
         const copy = JSON.parse(JSON.stringify(prev));
         copy.customFields.splice(value, 1);
@@ -230,12 +259,10 @@ function App() {
       if (id.split("-")[1] === "DateBtn") fieldType = "date";
       setActiveCollection((prev) => {
         const copy = JSON.parse(JSON.stringify(prev));
-        copy.customFields.push([fieldType, "New custom field"]);
+        copy.customFields.push([fieldType, language === "eng" ? "New custom field" : "Новое дополнительное поле"]);
         return copy;
       });
     }
-
-    // Buttons
 
     if (id === "collectionModalCancelBtn") {
       setAddingCollection(false);
@@ -268,11 +295,11 @@ function App() {
     }
     if (id === "collectionsListItemDeleteBtn") {
       setActiveCollection(input);
-      deleteDialogHandler();
+      deleteDialogCollectionsHandler();
     }
     if (id === "collectionsDialogDeleteConfirmationBtn") {
       deleteCollection(activeCollection._id);
-      deleteDialogHandler();
+      deleteDialogCollectionsHandler();
     }
     if (id === "collectionsListControlsAdd") {
       setActiveCollection({ customFields: [] });
@@ -371,6 +398,7 @@ function App() {
   };
 
   const itemsHandler = (e, i, reason) => {
+    testThenLogout();
     const id = e?.currentTarget?.id || "";
     const value = e?.currentTarget?.value || "";
     const customField = id.split(",");
@@ -511,13 +539,13 @@ function App() {
       console.log(response.error);
     }
     if (response.ok) {
-      console.log("Item deleted:", json);
       dispatchItems({ type: "DELETE_ITEM", payload: json });
       getItems();
     }
   };
 
   const itemCommentHandler = (e, itemID, comment) => {
+    testThenLogout();
     const id = e.currentTarget.id;
     const value = e.currentTarget.value;
     const newItem = items.filter((i) => i._id === itemID)[0];
@@ -536,6 +564,10 @@ function App() {
   };
 
   const itemsModalHandler = () => {
+    if (itemsModalVisibility) {
+      setAddingItem(false);
+      setTimeout(() => setItemToAdd({}), 300);
+    }
     itemsModalVisibility ? setItemsModalVisibility(false) : setItemsModalVisibility(true);
   };
 
@@ -566,6 +598,7 @@ function App() {
   };
 
   const searchHandler = (e) => {
+    testThenLogout();
     const id = e.currentTarget.id;
     const value = e.currentTarget.value;
     if (id === "searchInput") {
@@ -589,7 +622,6 @@ function App() {
     const json = await response.json();
     if (response.ok) {
       dispatchItems({ type: "SET_ITEMS", payload: json });
-      console.log("Search results:", json);
       setSearchResults(json);
       setSearchInput("");
     }
@@ -615,6 +647,7 @@ function App() {
   };
 
   const tagCloudHandler = (tag) => {
+    testThenLogout();
     setSearchQuery(tag.value);
     searchItems(tag.value);
     navigate("/search");
@@ -628,14 +661,22 @@ function App() {
     deleteDialogComments ? setDeleteDialogComments(false) : setDeleteDialogComments(true);
   };
 
-  const deleteDialogHandler = (e) => {
-    deleteDialog ? setDeleteDialog(false) : setDeleteDialog(true);
+  const deleteDialogCollectionsHandler = (e) => {
+    deleteDialogCollections ? setDeleteDialogCollections(false) : setDeleteDialogCollections(true);
+  };
+
+  const languageHandler = () => {
+    testThenLogout();
+    if (!localStorage.getItem("language")) localStorage.setItem("language", "eng");
+    const newLang = localStorage.getItem("language") === "eng" ? "rus" : "eng";
+    localStorage.setItem("language", newLang);
+    window.location.reload();
   };
 
   return (
     <section className='app-parent'>
       <header className='app-header-parent'>
-        <HeaderMenu user={user} searchHandler={searchHandler} searchInput={searchInput} />
+        <HeaderMenu language={language} user={user} searchHandler={searchHandler} searchInput={searchInput} />
       </header>
       <section className='app-body-parent'>
         <Routes>
@@ -644,6 +685,7 @@ function App() {
             element={
               collections && users ? (
                 <Home
+                  language={language}
                   user={user}
                   users={users}
                   getCollections={getCollections}
@@ -656,8 +698,8 @@ function App() {
                   activeCollection={activeCollection}
                   setActiveCollection={setActiveCollection}
                   openCollectionHandler={openCollectionHandler}
-                  deleteDialog={deleteDialog}
-                  deleteDialogHandler={deleteDialogHandler}
+                  deleteDialog={deleteDialogCollections}
+                  deleteDialogCollectionsHandler={deleteDialogCollectionsHandler}
                   collectionsCFError={collectionsCFError}
                   collectionsCategoryHandler={collectionsCategoryHandler}
                   searchQuery={searchQuery}
@@ -666,7 +708,6 @@ function App() {
                   items={items}
                   activeItems={items}
                   addingItem={addingItem}
-                  setOpenItem={setOpenItem}
                   tagSuggestions={tagSuggestions}
                   checkAllItemsHandler={checkAllItemsHandler}
                   checkItemHandler={checkItemHandler}
@@ -696,6 +737,7 @@ function App() {
             element={
               user && users && collections ? (
                 <Account
+                  language={language}
                   user={user}
                   users={users}
                   usersHandler={usersHandler}
@@ -713,27 +755,31 @@ function App() {
                   openCollectionHandler={openCollectionHandler}
                   deleteDialogUsers={deleteDialogUsers}
                   deleteDialogUsersHandler={deleteDialogUsersHandler}
-                  deleteDialog={deleteDialog}
-                  deleteDialogHandler={deleteDialogHandler}
+                  deleteDialog={deleteDialogCollections}
+                  deleteDialogHandler={deleteDialogCollectionsHandler}
                   collectionsCFError={collectionsCFError}
                   collectionsCategoryHandler={collectionsCategoryHandler}
                 />
               ) : (
-                ""
+                <Typography fontSize={"2rem"}>
+                  {language === "eng" ? "Not logged in." : "Пользователь не аутентифицирован."}
+                  <Link href='/login'>{language === "eng" ? "Login?" : "Войти?"}</Link>
+                </Typography>
               )
             }
           />
+
           <Route
             path='/items'
             element={
               items && tagSuggestions ? (
                 <Items
+                  language={language}
                   user={user}
                   users={users}
                   activeCollection={activeCollection}
                   activeItems={items}
                   addingItem={addingItem}
-                  setOpenItem={setOpenItem}
                   checkAllItemsHandler={checkAllItemsHandler}
                   checkItemHandler={checkItemHandler}
                   checkedAllItems={checkedAllItems}
@@ -752,7 +798,10 @@ function App() {
                   tagSuggestions={tagSuggestions}
                 />
               ) : (
-                ""
+                <Typography fontSize={"2rem"}>
+                  {language === "eng" ? "No collection opened." : "Коллекция не выбрана."}{" "}
+                  <Link href='/'>{language === "eng" ? "Go home?" : "Домой?"}</Link>
+                </Typography>
               )
             }
           />
@@ -760,6 +809,7 @@ function App() {
             path='/search'
             element={
               <Search
+                language={language}
                 user={user}
                 users={users}
                 collections={collections}
@@ -776,7 +826,13 @@ function App() {
         </Routes>
       </section>
 
-      <footer className='app-footer-parent'></footer>
+      <footer className='app-footer-parent'>
+        <Typography color={"white"}>Eng</Typography>
+        <Switch color='default' onChange={languageHandler} defaultChecked={language === "rus" ? true : false} />
+        <Typography color={"white"} mr={"2rem"}>
+          Rus
+        </Typography>
+      </footer>
     </section>
   );
 }

@@ -4,6 +4,8 @@ import { TagCloud } from "react-tagcloud";
 import Collections from "../components/Collections";
 import ItemsNewest from "../components/ItemsNewest";
 
+const lang = localStorage.getItem("language");
+
 const Home = (props) => {
   if (!props.tagSuggestions) props.getItems();
 
@@ -41,7 +43,7 @@ const Home = (props) => {
       {props.items && props.tagSuggestions ? (
         <div>
           <Typography ml={"6%"} mt={"1rem"} variant='h4'>
-            Last added items
+            {lang === "eng" ? "Newest items" : "Последние записи"}
           </Typography>
           <ItemsNewest
             homePage={true}
@@ -70,7 +72,7 @@ const Home = (props) => {
             camelize={props.camelize}
           />
           <Typography ml={"6%"} mt={"1rem"} mb={"2rem"} variant='h4'>
-            Largest collections
+            {lang === "eng" ? "Largest collections" : "Самые большие коллекции"}
           </Typography>
           <Collections
             homePage={true}

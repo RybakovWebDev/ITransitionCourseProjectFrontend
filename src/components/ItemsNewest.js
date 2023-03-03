@@ -9,6 +9,8 @@ import { Favorite, KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-materia
 import { useState } from "react";
 import Comments from "./Comments";
 
+const lang = localStorage.getItem("language");
+
 const RenderItemsTable = (propsTable) => {
   const [rowOpen, setRowOpen] = useState(false);
   const { item, props } = propsTable;
@@ -59,10 +61,12 @@ const RenderItemsTable = (propsTable) => {
             <div className='items-table-element-collapse-body-cont'>
               <div className='items-table-element-collapse-body-data'>
                 <div className='items-table-element-collapse-body-comments-cont'>
-                  <h3 className='items-table-element-collapse-body-comments-label'>Comments</h3>
+                  <h3 className='items-table-element-collapse-body-comments-label'>
+                    {lang === "eng" ? "Comments" : "Комментарии"}
+                  </h3>
                   {comments.length === 0 ? (
                     <div className='item-comment-cont'>
-                      <p>No comments yet</p>
+                      <p>{lang === "eng" ? "No comments yet" : "Пока нет ни одного комментария"}</p>
                     </div>
                   ) : (
                     <Comments
@@ -79,7 +83,7 @@ const RenderItemsTable = (propsTable) => {
                   {props.user && (
                     <TextField
                       id='itemNewCommentField'
-                      label='New comment'
+                      label={lang === "eng" ? "New comment" : "Новый комментарий"}
                       multiline
                       maxRows={4}
                       variant='outlined'
@@ -96,7 +100,7 @@ const RenderItemsTable = (propsTable) => {
                     variant='btn btn-outline-dark'
                     onClick={(e) => props.itemCommentHandler(e, item._id)}
                   >
-                    Add comment
+                    {lang === "eng" ? "Add comment" : "Добавить комментарий"}
                   </Button>
                 )}
               </div>
@@ -109,16 +113,22 @@ const RenderItemsTable = (propsTable) => {
                   to='/items'
                   onClick={(e) => props.itemsHandler(e, item.collectionID)}
                 >
-                  Open parent collection
+                  {lang === "eng" ? "Open full collection" : "Открыть всю коллекцию"}
                 </Button>
                 {props.user && (
                   <Button
                     id='itemsTableItemCollapseControlsLikeBtn'
                     className='items-table-controls-btn'
-                    variant='btn btn-outline-dark'
+                    variant='btn btn-outline-primary'
                     onClick={(e) => props.itemsHandler(e, item)}
                   >
-                    {item.likes.includes(props.user?._id) ? "Dislike" : "Like"}
+                    {item.likes.includes(props.user?._id)
+                      ? lang === "eng"
+                        ? "Dislike"
+                        : "Убрать лайк"
+                      : lang === "eng"
+                      ? "Like"
+                      : "Поставить лайк"}
                   </Button>
                 )}
               </div>
@@ -147,11 +157,15 @@ const ItemsNewest = (props) => {
             >
               <TableHead>
                 <TableRow>
-                  <TableCell style={{ borderBottom: "1px solid lightgrey" }}>Item name</TableCell>
-                  <TableCell className='items-table-column-tags' style={{ borderBottom: "1px solid lightgrey" }}>
-                    Tags
+                  <TableCell style={{ borderBottom: "1px solid lightgrey" }}>
+                    {lang === "eng" ? "Item name" : "Название предмета"}
                   </TableCell>
-                  <TableCell style={{ borderBottom: "1px solid lightgrey" }}>Collection</TableCell>
+                  <TableCell className='items-table-column-tags' style={{ borderBottom: "1px solid lightgrey" }}>
+                    {lang === "eng" ? "Tags" : "Тэги"}
+                  </TableCell>
+                  <TableCell style={{ borderBottom: "1px solid lightgrey" }}>
+                    {lang === "eng" ? "Collection" : "Коллекция"}
+                  </TableCell>
                   <TableCell style={{ borderBottom: "1px solid lightgrey" }} />
                 </TableRow>
               </TableHead>

@@ -19,14 +19,17 @@ import { tableCellClasses } from "@mui/material/TableCell";
 import { Favorite, KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import { useState } from "react";
 import dayjs from "dayjs";
-import Comments from "./Comments";
+import Comments from "../components/Comments";
 import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { visuallyHidden } from "@mui/utils";
-import ItemModal from "./ItemModal";
+import ItemModal from "../components/ItemModal";
+import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+
+const lang = localStorage.getItem("language");
 
 function descendingComparator(a, b, orderBy, cf) {
   if (!cf) {
@@ -75,12 +78,12 @@ function EnhancedTableHead(propsTH) {
   const headCells = [
     {
       id: "name",
-      label: "Item name",
+      label: lang === "eng" ? "Item name" : "Название предмета",
       cf: false,
     },
     {
       id: "tags",
-      label: "Tags",
+      label: lang === "eng" ? "Tags" : "Тэги",
       cf: false,
     },
   ];
@@ -110,7 +113,10 @@ function EnhancedTableHead(propsTH) {
         <TableCell style={{ borderBottom: "1px solid lightgrey" }}>#</TableCell>
         {headCells.map((cell, i) =>
           cell.id === "tags" ? (
-            <TableCell style={{ borderBottom: "1px solid lightgrey" }}> {cell.label}</TableCell>
+            <TableCell key={i} style={{ borderBottom: "1px solid lightgrey" }}>
+              {" "}
+              {cell.label}
+            </TableCell>
           ) : (
             <TableCell
               style={{ borderBottom: "1px solid lightgrey" }}
@@ -153,7 +159,7 @@ function EnhancedTableToolbar(props) {
     >
       {numChecked > 0 ? (
         <Typography sx={{ flex: "1 1 100%" }} color='inherit' variant='subtitle1' component='div'>
-          {numChecked} selected
+          {numChecked} {lang === "eng" ? "selected" : "выбрано"}
         </Typography>
       ) : (
         ""
@@ -224,10 +230,12 @@ const RenderItemsTable = (propsTable) => {
             <div className='items-table-element-collapse-body-cont'>
               <div className='items-table-element-collapse-body-data'>
                 <div className='items-table-element-collapse-body-comments-cont'>
-                  <h3 className='items-table-element-collapse-body-comments-label'>Comments</h3>
+                  <h3 className='items-table-element-collapse-body-comments-label'>
+                    {lang === "eng" ? "Comments" : "Комментарии"}
+                  </h3>
                   {comments.length === 0 ? (
                     <div className='item-comment-cont'>
-                      <p>No comments yet</p>
+                      <p>{lang === "eng" ? "No comments yet" : "Пока нет ни одного комментария"}</p>
                     </div>
                   ) : (
                     <Comments
@@ -244,7 +252,7 @@ const RenderItemsTable = (propsTable) => {
                   {props.user && (
                     <TextField
                       id='itemNewCommentField'
-                      label='New comment'
+                      label={lang === "eng" ? "New comment" : "Новый комментарий"}
                       multiline
                       maxRows={4}
                       variant='outlined'
@@ -261,21 +269,11 @@ const RenderItemsTable = (propsTable) => {
                     variant='btn btn-outline-dark'
                     onClick={(e) => props.itemCommentHandler(e, item._id)}
                   >
-                    Add comment
+                    {lang === "eng" ? "Add comment" : "Добавить комментарий"}
                   </Button>
                 )}
               </div>
               <div className='items-table-element-collapse-body-controls'>
-                {props.user && (
-                  <Button
-                    id='itemsTableItemCollapseControlsLikeBtn'
-                    className='items-table-controls-btn'
-                    variant='btn btn-outline-dark'
-                    onClick={(e) => props.itemsHandler(e, item)}
-                  >
-                    {item.likes.includes(props.user?._id) ? "Dislike" : "Like"}
-                  </Button>
-                )}
                 {props.user?.admin || props.user?._id === props.activeCollection.author ? (
                   <Button
                     id='itemsTableItemCollapseControlsEditBtn'
@@ -283,10 +281,26 @@ const RenderItemsTable = (propsTable) => {
                     variant='btn btn-outline-dark'
                     onClick={(e) => props.itemsHandler(e, item._id)}
                   >
-                    Edit
+                    {lang === "eng" ? "Edit" : "Редактировать"}
                   </Button>
                 ) : (
                   ""
+                )}
+                {props.user && (
+                  <Button
+                    id='itemsTableItemCollapseControlsLikeBtn'
+                    className='items-table-controls-btn'
+                    variant='btn btn-outline-primary'
+                    onClick={(e) => props.itemsHandler(e, item)}
+                  >
+                    {item.likes.includes(props.user?._id)
+                      ? lang === "eng"
+                        ? "Dislike"
+                        : "Убрать лайк"
+                      : lang === "eng"
+                      ? "Like"
+                      : "Поставить лайк"}
+                  </Button>
                 )}
               </div>
             </div>
@@ -323,20 +337,24 @@ const Items = (props) => {
         return customFields.map((el, i) => {
           const field = props.camelize(el[1]);
           const fieldType = el[0];
-          if (fieldType === "boolean") {
+          if (fieldType === "boolean")
             return (
               <TableCell key={i}>
                 <FormCheck checked={item.customFields[field] || false} readOnly />
               </TableCell>
             );
-          }
           if (fieldType === "date")
             return (
               <TableCell key={i}>
                 {item.customFields[field] ? dayjs(item.customFields[field]).format("MMM-DD-YYYY") : ""}
               </TableCell>
             );
-
+          if (fieldType === "textarea")
+            return (
+              <TableCell key={i}>
+                <ReactMarkdown>{item.customFields[field]}</ReactMarkdown>
+              </TableCell>
+            );
           return <TableCell key={i}>{item.customFields[field]}</TableCell>;
         });
       }
@@ -400,7 +418,7 @@ const Items = (props) => {
                 variant='btn btn-outline-dark'
                 onClick={props.itemsHandler}
               >
-                New item
+                {lang === "eng" ? "New item" : "Новый предмет"}
               </Button>
             ) : (
               ""
@@ -413,7 +431,7 @@ const Items = (props) => {
                   variant='btn btn-outline-dark'
                   onClick={props.deleteDialogItemsHandler}
                 >
-                  Remove selected
+                  {lang === "eng" ? "Remove selected" : "Удалить выбранные"}
                 </Button>
 
                 <Dialog
@@ -424,14 +442,14 @@ const Items = (props) => {
                   fullWidth={true}
                   maxWidth='xs'
                 >
-                  <DialogTitle id='alert-dialog-title'>{"Are you sure?"}</DialogTitle>
+                  <DialogTitle id='alert-dialog-title'>{lang === "eng" ? "Are you sure?" : "Вы уверены?"}</DialogTitle>
 
                   <DialogActions>
                     <Button variant='btn btn-outline-primary' onClick={props.deleteDialogItemsHandler}>
-                      Cancel
+                      {lang === "eng" ? "Cancel" : "Отмена"}
                     </Button>{" "}
                     <Button id='itemsTableControlsRemove' variant='btn btn-outline-danger' onClick={props.itemsHandler}>
-                      Remove
+                      {lang === "eng" ? "Delete" : "Удалить"}
                     </Button>
                   </DialogActions>
                 </Dialog>

@@ -1,6 +1,8 @@
 import { Typography } from "@mui/material";
 import ItemsNewest from "../components/ItemsNewest";
 
+const lang = localStorage.getItem("language");
+
 const Search = (props) => {
   return (
     <article className='app-search-parent'>

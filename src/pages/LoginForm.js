@@ -3,6 +3,8 @@ import { Button, Form } from "react-bootstrap";
 
 import { useLogin } from "../hooks/useLogin";
 
+const lang = localStorage.getItem("language");
+
 const LoginForm = (props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,29 +19,28 @@ const LoginForm = (props) => {
     <article className='app-main-cont-logreg'>
       <Form onSubmit={handleSubmit}>
         <Form.Group className='mb-3' controlId='formBasicEmail'>
-          <Form.Label>Email address</Form.Label>
+          <Form.Label>{lang === "eng" ? "Email address" : "Электронная почта"}</Form.Label>
           <Form.Control
             size='lg'
             type='email'
-            placeholder='Enter email'
+            placeholder={lang === "eng" ? "Enter email" : "Введите почту"}
             onChange={(e) => setEmail(e.target.value)}
             value={email}
           />
         </Form.Group>
 
         <Form.Group className='mb-3' controlId='formBasicPassword'>
-          <Form.Label>Password</Form.Label>
+          <Form.Label>{lang === "eng" ? "Password" : "Пароль"}</Form.Label>
           <Form.Control
             size='lg'
             type='password'
-            placeholder='Password'
+            placeholder={lang === "eng" ? "Enter password" : "Введите пароль"}
             onChange={(e) => setPassword(e.target.value)}
             value={password}
           />
-          {/* <Form.Text className='text-muted'>Between 1 and 8 characters</Form.Text> */}
         </Form.Group>
         <Button disabled={isLoading} variant='btn btn-outline-dark' type='submit'>
-          Login
+          {lang === "eng" ? "Login" : "Войти"}
         </Button>
       </Form>
       <h3 className='error-message-bottom'>{error && error}</h3>

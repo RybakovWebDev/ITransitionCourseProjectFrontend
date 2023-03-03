@@ -9,6 +9,8 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 const icon = <CheckBoxOutlineBlankIcon fontSize='small' />;
 const checkedIcon = <CheckBoxIcon fontSize='small' />;
 
+const lang = localStorage.getItem("language");
+
 const ItemModal = (propsItemModal) => {
   const { props, suggestions, newItemName, newItemTags, customFields } = propsItemModal;
   return (
@@ -24,19 +26,19 @@ const ItemModal = (propsItemModal) => {
           <TextField
             onChange={props.itemsHandler}
             id='itemModalName'
-            label='Item name'
+            label={lang === "eng" ? "Item name" : "Название"}
             variant='standard'
             fullWidth={true}
-            placeholder={"Item name"}
+            placeholder={lang === "eng" ? "Item name" : "Название предмета"}
             defaultValue={newItemName}
             error={newItemName ? false : true}
-            helperText={newItemName ? "" : "Name required"}
+            helperText={newItemName ? "" : lang === "eng" ? "Name required" : "Обязательное поле"}
           />
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form.Group className='' controlId='itemModalTags'>
-          <Form.Label>Tags</Form.Label>
+          <Form.Label>{lang === "eng" ? "Tags" : "Тэги"}</Form.Label>
           <Autocomplete
             multiple
             className='item-modal-tags'
@@ -60,7 +62,18 @@ const ItemModal = (propsItemModal) => {
               ))
             }
             renderInput={(params) => (
-              <TextField {...params} placeholder={newItemTags.length !== 0 ? "Add tag" : "Add at least one tag"} />
+              <TextField
+                {...params}
+                placeholder={
+                  newItemTags.length !== 0
+                    ? lang === "eng"
+                      ? "Add tag"
+                      : "Добавить тэг"
+                    : lang === "eng"
+                    ? "Add at least one tag"
+                    : "Добавьте хотя бы один тэг"
+                }
+              />
             )}
             onChange={props.itemsHandler}
             onInputChange={props.itemsHandler}
@@ -90,6 +103,7 @@ const ItemModal = (propsItemModal) => {
                     id={el.join()}
                     fullWidth
                     multiline
+                    minRows={3}
                     maxRows={8}
                     onChange={props.itemsHandler}
                     defaultValue={props.itemToAdd.customFields[fieldName]}
@@ -122,7 +136,7 @@ const ItemModal = (propsItemModal) => {
       </Modal.Body>
       <Modal.Footer>
         <Button id='itemModalCancelBtn' variant='btn btn-outline-dark' onClick={props.itemsHandler}>
-          Cancel
+          {lang === "eng" ? "Cancel" : "Отмена"}
         </Button>
         <Button
           type='submit'
@@ -131,7 +145,13 @@ const ItemModal = (propsItemModal) => {
           disabled={newItemName && newItemTags.length !== 0 ? false : true}
           onClick={props.itemsHandler}
         >
-          {props.addingItem ? "Add item" : "Save changes"}
+          {props.addingItem
+            ? lang === "eng"
+              ? "Add item"
+              : "Добавить предмет"
+            : lang === "eng"
+            ? "Save changes"
+            : "Применить изменения"}
         </Button>
       </Modal.Footer>
     </Modal>

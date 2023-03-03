@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useLogin } from "../hooks/useLogin";
-// import { useUsersContext } from "../hooks/useUsersContext";
+
+const lang = localStorage.getItem("language");
 
 const RegistrationForm = (props) => {
   const { dispatch } = useAuthContext();
@@ -18,7 +19,7 @@ const RegistrationForm = (props) => {
   const navigate = useNavigate();
 
   const _id = uuidv4();
-  const admin = false;
+  const admin = true;
   const likedItems = [];
   const status = true;
 
@@ -57,10 +58,10 @@ const RegistrationForm = (props) => {
     <article className='app-main-cont-logreg'>
       <Form onSubmit={handleSubmit}>
         <Form.Group className='mb-3' controlId='formBasicName'>
-          <Form.Label>Desired name</Form.Label>
+          <Form.Label>{lang === "eng" ? "Desired name" : "Введите имя"}</Form.Label>
           <Form.Control
             size='lg'
-            placeholder='Desired name'
+            placeholder={lang === "eng" ? "Desired name" : "Имя пользователя"}
             onChange={(e) => setName(e.target.value)}
             value={name}
             className={emptyFields.includes("name") ? `field-error` : ""}
@@ -68,11 +69,11 @@ const RegistrationForm = (props) => {
         </Form.Group>
 
         <Form.Group className='mb-3' controlId='formBasicEmail'>
-          <Form.Label>Email address</Form.Label>
+          <Form.Label>{lang === "eng" ? "Email address" : "Электронная почта"}</Form.Label>
           <Form.Control
             size='lg'
             type='email'
-            placeholder='Enter email'
+            placeholder={lang === "eng" ? "Enter email" : "Введите почту"}
             onChange={(e) => setEmail(e.target.value)}
             value={email}
             className={emptyFields.includes("email") ? `field-error` : ""}
@@ -84,15 +85,17 @@ const RegistrationForm = (props) => {
           <Form.Control
             size='lg'
             type='password'
-            placeholder='Enter password'
+            placeholder={lang === "eng" ? "Enter password" : "Введите пароль"}
             onChange={(e) => setPassword(e.target.value)}
             value={password}
             className={emptyFields.includes("password") ? `field-error` : ""}
           />
-          <Form.Text className='password-description'>At least 4 characters.</Form.Text>
+          <Form.Text className='password-description'>
+            {lang === "eng" ? "At least 4 characters." : "Минимум 4 символа."}
+          </Form.Text>
         </Form.Group>
         <Button variant='btn btn-outline-dark' type='submit'>
-          Register
+          {lang === "eng" ? "Register" : "Зарегистрироваться"}
         </Button>
       </Form>
       <h3 className='error-message-bottom'>{error && error}</h3>
