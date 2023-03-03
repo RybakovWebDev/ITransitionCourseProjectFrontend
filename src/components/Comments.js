@@ -4,7 +4,7 @@ import { Button } from "react-bootstrap";
 import { Dialog, DialogActions, DialogTitle, IconButton } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 const Comments = (props) => {
   if (props.comments)

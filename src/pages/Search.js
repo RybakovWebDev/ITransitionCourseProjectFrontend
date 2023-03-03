@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
 import ItemsNewest from "../components/ItemsNewest";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 const Search = (props) => {
   return (

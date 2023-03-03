@@ -2,7 +2,7 @@ import { Typography } from "@mui/material";
 import Collections from "../components/Collections";
 import Users from "../components/Users";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 const Account = (props) => {
   return (

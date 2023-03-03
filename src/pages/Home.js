@@ -4,7 +4,7 @@ import { TagCloud } from "react-tagcloud";
 import Collections from "../components/Collections";
 import ItemsNewest from "../components/ItemsNewest";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 const Home = (props) => {
   if (!props.tagSuggestions) props.getItems();

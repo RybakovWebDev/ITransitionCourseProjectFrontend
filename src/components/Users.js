@@ -17,7 +17,7 @@ import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { alpha } from "@mui/material/styles";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 const RenderUsersTable = (propsTable) => {
   const { u, i, isSelected, checkUserHandler, props } = propsTable;

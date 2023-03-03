@@ -18,7 +18,7 @@ import { Button, ButtonGroup, Dropdown, DropdownButton, Form, ListGroup, Modal }
 import { Link } from "react-router-dom";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 const categoriesEng = ["Books", "Cars", "Games", "Movies", "Wishlist", "Other"];
 const categoriesRus = ["Книги", "Машины", "Игры", "Кино", "Список желаний", "Другое"];
 
@@ -249,7 +249,7 @@ const Collections = (props) => {
                 </AccordionSummary>
                 <AccordionDetails>
                   <div className='collections-list-item-body-content-cont'>
-                    <Typography className='collections-list-item-description'>
+                    <Typography className='collections-list-item-description' component={"div"}>
                       <ReactMarkdown>{c.description}</ReactMarkdown>
                     </Typography>
                   </div>

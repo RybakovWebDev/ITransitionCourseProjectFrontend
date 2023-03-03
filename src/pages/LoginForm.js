@@ -3,7 +3,7 @@ import { Button, Form } from "react-bootstrap";
 
 import { useLogin } from "../hooks/useLogin";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState("");

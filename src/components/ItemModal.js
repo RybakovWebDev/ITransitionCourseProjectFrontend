@@ -9,7 +9,7 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 const icon = <CheckBoxOutlineBlankIcon fontSize='small' />;
 const checkedIcon = <CheckBoxIcon fontSize='small' />;
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 const ItemModal = (propsItemModal) => {
   const { props, suggestions, newItemName, newItemTags, customFields } = propsItemModal;

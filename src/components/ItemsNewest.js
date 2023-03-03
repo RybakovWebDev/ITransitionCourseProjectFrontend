@@ -9,7 +9,7 @@ import { Favorite, KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-materia
 import { useState } from "react";
 import Comments from "./Comments";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 const RenderItemsTable = (propsTable) => {
   const [rowOpen, setRowOpen] = useState(false);

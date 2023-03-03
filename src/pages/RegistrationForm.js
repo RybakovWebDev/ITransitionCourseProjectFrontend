@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useLogin } from "../hooks/useLogin";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 const RegistrationForm = (props) => {
   const { dispatch } = useAuthContext();

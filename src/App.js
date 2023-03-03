@@ -64,20 +64,14 @@ function App() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {});
-
   const testThenLogout = () => {
-    console.log("Test started");
     getUsers();
-
     if (user && users && !users.filter((u) => u._id === user._id)[0]) {
-      console.log("Logging out, user deleted");
       logout();
       navigate("/");
       return;
     }
     if (user && users && !users.filter((u) => u._id === user._id)[0].status) {
-      console.log("Logging out");
       logout();
       navigate("/");
     }

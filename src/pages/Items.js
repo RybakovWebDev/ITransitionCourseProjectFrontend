@@ -29,7 +29,7 @@ import { visuallyHidden } from "@mui/utils";
 import ItemModal from "../components/ItemModal";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 function descendingComparator(a, b, orderBy, cf) {
   if (!cf) {

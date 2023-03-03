@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { useLogout } from "../hooks/useLogout";
 
-const lang = localStorage.getItem("language");
+const lang = localStorage.getItem("language") || "eng";
 
 const HeaderMenu = (props) => {
   const { logout } = useLogout();
