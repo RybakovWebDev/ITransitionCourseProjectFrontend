@@ -16,6 +16,7 @@ import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { alpha } from "@mui/material/styles";
+import DeleteDialog from "./DeleteDialog";
 
 const lang = localStorage.getItem("language") || "eng";
 
@@ -175,24 +176,12 @@ const Users = (props) => {
           ) : (
             ""
           )}
-          <Dialog
+          <DeleteDialog
             open={props.deleteDialogUsers}
             onClose={props.deleteDialogUsersHandler}
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-            fullWidth={true}
-            maxWidth='xs'
-          >
-            <DialogTitle id='alert-dialog-title'>{"Are you sure?"}</DialogTitle>
-            <DialogActions>
-              <Button variant='btn btn-outline-primary' onClick={props.deleteDialogUsersHandler}>
-                {lang === "eng" ? "Cancel" : "Отмена"}
-              </Button>{" "}
-              <Button id='userRemoveBtn' variant='btn btn-outline-danger' onClick={(e) => props.usersHandler(e)}>
-                {lang === "eng" ? "Delete" : "Удалить"}
-              </Button>
-            </DialogActions>
-          </Dialog>
+            onClickCancel={props.deleteDialogUsersHandler}
+            onClickConfirm={(e) => props.usersHandler(e)}
+          />
         </div>
       </div>
     </article>

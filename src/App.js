@@ -2,7 +2,7 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import { useUsersContext } from "./hooks/useUsersContext";
 import { useCollectionsContext } from "./hooks/useCollectionsContext";
-import { redirect, Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Home from "./pages/Home";
 import RegistrationForm from "./pages/RegistrationForm";
@@ -14,9 +14,11 @@ import dayjs from "dayjs";
 import { useAuthContext } from "./hooks/useAuthContext";
 import { useItemsContext } from "./hooks/useItemsContext";
 import Search from "./pages/Search";
-import { Link, Switch, Typography } from "@mui/material";
+import { CircularProgress, Link, Switch, Typography } from "@mui/material";
 import { useLogout } from "./hooks/useLogout";
-import { Button } from "react-bootstrap";
+import { deleteUser, getUsers, patchUser } from "./modules/userCRUD";
+import { deleteCollection, getCollections, patchCollection, postCollection } from "./modules/collectionCRUD";
+import { deleteItem, getItems, patchItem, postItem } from "./modules/itemCRUD";
 
 function camelize(str) {
   return str
@@ -27,13 +29,14 @@ function camelize(str) {
     .replace(/\s+/g, "");
 }
 
+const lang = localStorage.getItem("language") || "eng";
+
 function App() {
   const { logout } = useLogout();
   const { user } = useAuthContext();
   const { users, dispatchUsers } = useUsersContext();
   const { collections, dispatchCollections } = useCollectionsContext();
   const [checkedUsers, setCheckedUsers] = useState([]);
-  const [checkedAllUsers, setCheckedAllUsers] = useState(false);
   const [deleteDialogUsers, setDeleteDialogUsers] = useState(false);
   // Collections
   const [activeCollection, setActiveCollection] = useState([]);
@@ -58,14 +61,12 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
-  const [language, setLanguage] = useState(localStorage.getItem("language"));
-
   const tags = [];
 
   const navigate = useNavigate();
 
   const testThenLogout = () => {
-    getUsers();
+    getUsers(dispatchUsers);
     if (user && users && !users.filter((u) => u._id === user._id)[0]) {
       logout();
       navigate("/");
@@ -105,73 +106,25 @@ function App() {
     if (id === "usersUpdateAdminBtn") {
       const userUpdate = JSON.parse(JSON.stringify(input));
       userUpdate.admin = !userUpdate.admin;
-      patchUser(userUpdate);
+      patchUser(userUpdate, dispatchUsers);
     }
     if (id === "usersUpdateStatusBtn") {
       const userUpdate = JSON.parse(JSON.stringify(input));
       userUpdate.status = !userUpdate.status;
-      patchUser(userUpdate);
+      patchUser(userUpdate, dispatchUsers);
     }
-    if (id === "userRemoveBtn") {
-      checkedUsers.map((id) => deleteUser(id));
+    if (id === "dialogDeleteConfirmationBtn" && items) {
+      checkedUsers.map((id) => deleteUser(id, dispatchUsers, items, dispatchItems, collections, dispatchCollections));
       setCheckedUsers([]);
-      getUsers();
+      getUsers(dispatchUsers);
       deleteDialogUsersHandler();
     }
   };
 
-  const getUsers = async () => {
-    const response = await fetch(`${process.env.REACT_APP_URI}/api/users`);
-    const json = await response.json();
-    if (response.ok) {
-      dispatchUsers({ type: "SET_USERS", payload: json });
-    }
-  };
-
-  const patchUser = async (u) => {
-    const response = await fetch(`${process.env.REACT_APP_URI}/api/users/${u._id}`, {
-      method: "PATCH",
-      body: JSON.stringify(u),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const json = await response.json();
-    if (!response.ok) {
-      console.log("Response for patching user not ok");
-      console.log(response.error);
-    }
-    if (response.ok) {
-      dispatchUsers({ type: "PATCH_USER", payload: json });
-    }
-  };
-
-  const deleteUser = async (id) => {
-    const response = await fetch(`${process.env.REACT_APP_URI}/api/users/${id}`, {
-      method: "DELETE",
-    });
-    const json = await response.json();
-
-    if (!response.ok) {
-      console.log("Response for deleting user not ok");
-      console.log(response.error);
-    }
-    if (response.ok) {
-      dispatchUsers({ type: "DELETE_USER", payload: json });
-      items.forEach((el) => {
-        if (el.author === id) deleteItem(el._id);
-      });
-      collections.forEach((el) => {
-        if (el.author === id) deleteCollection(el._id);
-      });
-      getUsers();
-    }
-  };
-
   const checkAllUsersHandler = (e) => {
+    getItems(dispatchItems, tags, setTagSuggestions);
     if (e.target.checked) {
       const newSelected = users.filter((u) => u._id !== user._id).map((u) => u._id);
-      console.log(newSelected);
       setCheckedUsers(newSelected);
       return;
     }
@@ -179,6 +132,7 @@ function App() {
   };
 
   const checkUserHandler = (e, id) => {
+    getItems(dispatchItems, tags, setTagSuggestions);
     const selectedIndex = checkedUsers.indexOf(id);
     let newSelected = [];
 
@@ -199,6 +153,8 @@ function App() {
     deleteDialogUsers ? setDeleteDialogUsers(false) : setDeleteDialogUsers(true);
   };
 
+  ///////////////////
+
   const collectionsHandler = (e, input, option) => {
     testThenLogout();
     const id = e.currentTarget?.id;
@@ -212,7 +168,13 @@ function App() {
     if (input === false) {
       setActiveCollection({});
     }
-    if (id === "collectionModalCustomFieldRemoveBtn") {
+    if (e === "imageUrl") {
+      setActiveCollection({ ...activeCollection, image: input });
+    }
+    if (id === "collectionModalRemoveImageBtn") {
+      setActiveCollection({ ...activeCollection, image: "" });
+    }
+    if (e === "collectionModalCustomFieldRemoveBtn") {
       setDeleteDialogCollections(false);
       setActiveCollection((prev) => {
         const copy = JSON.parse(JSON.stringify(prev));
@@ -220,7 +182,7 @@ function App() {
         return copy;
       });
     }
-    if (id.split(",")[0] === "collectionModalCustomFieldName") {
+    if (id && id.split(",")[0] === "collectionModalCustomFieldName") {
       const changeIndex = id.split(",")[1];
       value ? setCollectionsCFError("") : setCollectionsCFError("Can't be empty");
       setActiveCollection((prev) => {
@@ -230,7 +192,7 @@ function App() {
       });
     }
 
-    if (id.split("-")[0] === "collectionsModalCustomFieldType") {
+    if (id && id.split("-")[0] === "collectionsModalCustomFieldType") {
       let newValue;
       if (input === "Short text message") newValue = "input";
       if (input === "Long text message") newValue = "textarea";
@@ -244,7 +206,7 @@ function App() {
       });
     }
 
-    if (id.split("-")[0] === "collectionsModalFieldAdd") {
+    if (id && id.split("-")[0] === "collectionsModalFieldAdd") {
       let fieldType;
       if (id.split("-")[1] === "InputBtn") fieldType = "input";
       if (id.split("-")[1] === "TextareaBtn") fieldType = "textarea";
@@ -253,19 +215,18 @@ function App() {
       if (id.split("-")[1] === "DateBtn") fieldType = "date";
       setActiveCollection((prev) => {
         const copy = JSON.parse(JSON.stringify(prev));
-        copy.customFields.push([fieldType, language === "eng" ? "New custom field" : "Новое дополнительное поле"]);
+        copy.customFields.push([fieldType, lang === "eng" ? "New custom field" : "Новое дополнительное поле"]);
         return copy;
       });
     }
 
     if (id === "collectionModalCancelBtn") {
       setAddingCollection(false);
-      setActiveCollection(copyCollection);
+      setTimeout(() => setActiveCollection(copyCollection), 300);
       collectionsModalHandler();
     }
-
     if (id === "collectionModalSaveBtn") {
-      patchCollection();
+      patchCollection(activeCollection, dispatchCollections);
       setCollectionsModalVisibility(false);
     }
     if (id === "collectionModalAddBtn") {
@@ -275,7 +236,7 @@ function App() {
         author: user._id,
         customFields: activeCollection.customFields ? activeCollection.customFields : [],
       });
-      postCollection();
+      postCollection(activeCollection, user, dispatchCollections);
       setCollectionsModalVisibility(false);
       setAddingCollection(false);
     }
@@ -291,8 +252,8 @@ function App() {
       setActiveCollection(input);
       deleteDialogCollectionsHandler();
     }
-    if (id === "collectionsDialogDeleteConfirmationBtn") {
-      deleteCollection(activeCollection._id);
+    if (id === "dialogDeleteConfirmationBtn") {
+      deleteCollection(activeCollection._id, dispatchCollections);
       deleteDialogCollectionsHandler();
     }
     if (id === "collectionsListControlsAdd") {
@@ -317,79 +278,10 @@ function App() {
     setSearchInput("");
     setSearchQuery("");
     setActiveCollection(collections.filter((c) => c._id === id)[0]);
-    getItems();
+    getItems(dispatchItems, tags, setTagSuggestions);
   };
 
-  const getCollections = async () => {
-    const responseCollections = await fetch(`${process.env.REACT_APP_URI}/api/collections`);
-    const jsonCollections = await responseCollections.json();
-    if (responseCollections.ok) {
-      dispatchCollections({ type: "SET_COLLECTIONS", payload: jsonCollections });
-    }
-  };
-
-  const postCollection = async () => {
-    const newCollection = {
-      _id: uuidv4(),
-      name: activeCollection.name,
-      description: activeCollection.description,
-      category: activeCollection.category,
-      author: user._id,
-      image: activeCollection.image || "",
-      customFields: activeCollection?.customFields || {},
-    };
-
-    const response = await fetch(`${process.env.REACT_APP_URI}/api/collections`, {
-      method: "POST",
-      body: JSON.stringify(newCollection),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const json = await response.json();
-
-    if (!response.ok) {
-      console.log("Response for creating collection not ok");
-      console.log(response.error);
-    }
-    if (response.ok) {
-      dispatchCollections({ type: "CREATE_COLLECTION", payload: json });
-      getCollections();
-    }
-  };
-
-  const patchCollection = async () => {
-    const response = await fetch(`${process.env.REACT_APP_URI}/api/collections/${activeCollection._id}`, {
-      method: "PATCH",
-      body: JSON.stringify(activeCollection),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const json = await response.json();
-    if (!response.ok) {
-      console.log("Response for patching collection not ok");
-      console.log(response.error);
-    }
-    if (response.ok) {
-      dispatchCollections({ type: "PATCH_COLLECTION", payload: json });
-    }
-  };
-
-  const deleteCollection = async (id) => {
-    const response = await fetch(`${process.env.REACT_APP_URI}/api/collections/${id}`, {
-      method: "DELETE",
-    });
-    const json = await response.json();
-
-    if (!response.ok) {
-      console.log("Response for deleting collection not ok");
-      console.log(response.error);
-    }
-    if (response.ok) {
-      dispatchCollections({ type: "DELETE_COLLECTION", payload: json });
-    }
-  };
+  /////////////////////////
 
   const itemsHandler = (e, i, reason) => {
     testThenLogout();
@@ -433,8 +325,8 @@ function App() {
       setAddingItem(true);
       itemsModalHandler();
     }
-    if (id === "itemsTableControlsRemove") {
-      checkedItems.map((el) => deleteItem(el));
+    if (id === "dialogDeleteConfirmationBtn") {
+      checkedItems.map((el) => deleteItem(el, dispatchItems, tags, setTagSuggestions));
       setCheckedItems([]);
       setCheckedAllItems(false);
       deleteDialogItemsHandler();
@@ -446,7 +338,7 @@ function App() {
       const newItem = JSON.parse(JSON.stringify(i));
       const targetIndex = newItem.likes.indexOf(user._id);
       newItem.likes.includes(user._id) ? newItem.likes.splice(targetIndex, 1) : newItem.likes.push(user._id);
-      patchItem(newItem);
+      patchItem(newItem, dispatchItems, searchQuery, searchItems, tags, setTagSuggestions);
       setItemToAdd({});
     }
     if (id === "itemsTableItemCollapseControlsEditBtn") {
@@ -460,81 +352,15 @@ function App() {
       setTimeout(() => setItemToAdd({}), 300);
     }
     if (id === "itemModalSaveBtn") {
-      patchItem(itemUpdate);
+      patchItem(itemUpdate, dispatchItems, searchQuery, searchItems, tags, setTagSuggestions);
       itemsModalHandler();
       setTimeout(() => setItemToAdd({}), 300);
     }
     if (id === "itemModalAddBtn") {
-      postItem();
+      postItem(itemToAdd, dispatchItems, tags, setTagSuggestions);
       itemsModalHandler();
       setTimeout(() => setItemToAdd({}), 300);
       setAddingItem(false);
-    }
-  };
-
-  const getItems = async () => {
-    const response = await fetch(`${process.env.REACT_APP_URI}/api/items`);
-    const json = await response.json();
-    if (response.ok) {
-      dispatchItems({ type: "SET_ITEMS", payload: json });
-
-      json.map((el) => tags.push(...el.tags));
-      setTagSuggestions(tags.filter((value, i, arr) => arr.indexOf(value) === i));
-    }
-  };
-
-  const postItem = async () => {
-    const response = await fetch(`${process.env.REACT_APP_URI}/api/items`, {
-      method: "POST",
-      body: JSON.stringify(itemToAdd),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const json = await response.json();
-
-    if (!response.ok) {
-      console.log("Response for creating item not ok");
-      console.log(response.error);
-    }
-    if (response.ok) {
-      dispatchItems({ type: "CREATE_ITEM", payload: json });
-      getItems();
-    }
-  };
-
-  const patchItem = async (i) => {
-    const response = await fetch(`${process.env.REACT_APP_URI}/api/items/${i._id}`, {
-      method: "PATCH",
-      body: JSON.stringify(i),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const json = await response.json();
-    if (!response.ok) {
-      console.log("Response for patching item not ok");
-      console.log(response.error);
-    }
-    if (response.ok) {
-      dispatchItems({ type: "PATCH_ITEM", payload: json });
-      searchQuery ? searchItems(searchQuery) : getItems();
-    }
-  };
-
-  const deleteItem = async (id) => {
-    const response = await fetch(`${process.env.REACT_APP_URI}/api/items/${id}`, {
-      method: "DELETE",
-    });
-    const json = await response.json();
-
-    if (!response.ok) {
-      console.log("Response for deleting item not ok");
-      console.log(response.error);
-    }
-    if (response.ok) {
-      dispatchItems({ type: "DELETE_ITEM", payload: json });
-      getItems();
     }
   };
 
@@ -546,13 +372,13 @@ function App() {
     if (id === "itemNewCommentField") setItemComment(value);
     if (id === "itemsTableItemCollapseControlsAddComment") {
       newItem.comments.push({ _id: uuidv4(), author: user._id, text: itemComment });
-      patchItem(newItem);
+      patchItem(newItem, dispatchItems, searchQuery, searchItems, tags, setTagSuggestions);
       setItemComment("");
     }
     if (id === "itemCommentRemoveBtn") {
       const targetIndex = newItem.comments.indexOf(comment);
       newItem.comments.splice(targetIndex, 1);
-      patchItem(newItem);
+      patchItem(newItem, dispatchItems, searchQuery, searchItems, tags, setTagSuggestions);
       deleteDialogCommentsHandler();
     }
   };
@@ -590,6 +416,8 @@ function App() {
 
     setCheckedItems(newSelected);
   };
+
+  //////////////////////
 
   const searchHandler = (e) => {
     testThenLogout();
@@ -670,7 +498,7 @@ function App() {
   return (
     <section className='app-parent'>
       <header className='app-header-parent'>
-        <HeaderMenu language={language} user={user} searchHandler={searchHandler} searchInput={searchInput} />
+        <HeaderMenu user={user} searchHandler={searchHandler} searchInput={searchInput} />
       </header>
       <section className='app-body-parent'>
         <Routes>
@@ -679,11 +507,10 @@ function App() {
             element={
               collections && users ? (
                 <Home
-                  language={language}
                   user={user}
                   users={users}
-                  getCollections={getCollections}
-                  getItems={getItems}
+                  getCollections={getCollections(dispatchCollections)}
+                  getItems={() => getItems(dispatchItems, tags, setTagSuggestions)}
                   collections={collections}
                   addingCollection={addingCollection}
                   collectionsHandler={collectionsHandler}
@@ -720,7 +547,7 @@ function App() {
                   tagCloudHandler={tagCloudHandler}
                 />
               ) : (
-                ""
+                <CircularProgress />
               )
             }
           />
@@ -731,13 +558,11 @@ function App() {
             element={
               user && users && collections ? (
                 <Account
-                  language={language}
                   user={user}
                   users={users}
                   usersHandler={usersHandler}
                   checkAllUsersHandler={checkAllUsersHandler}
                   checkUserHandler={checkUserHandler}
-                  checkedAllUsers={checkedAllUsers}
                   checkedUsers={checkedUsers}
                   collections={collections}
                   addingCollection={addingCollection}
@@ -755,20 +580,15 @@ function App() {
                   collectionsCategoryHandler={collectionsCategoryHandler}
                 />
               ) : (
-                <Typography fontSize={"2rem"}>
-                  {language === "eng" ? "Not logged in." : "Пользователь не аутентифицирован."}
-                  <Link href='/login'>{language === "eng" ? "Login?" : "Войти?"}</Link>
-                </Typography>
+                <CircularProgress />
               )
             }
           />
-
           <Route
             path='/items'
             element={
               items && tagSuggestions ? (
                 <Items
-                  language={language}
                   user={user}
                   users={users}
                   activeCollection={activeCollection}
@@ -793,8 +613,8 @@ function App() {
                 />
               ) : (
                 <Typography fontSize={"2rem"}>
-                  {language === "eng" ? "No collection opened." : "Коллекция не выбрана."}{" "}
-                  <Link href='/'>{language === "eng" ? "Go home?" : "Домой?"}</Link>
+                  {lang === "eng" ? "No collection opened." : "Коллекция не выбрана."}{" "}
+                  <Link href='/'>{lang === "eng" ? "Go home?" : "Домой?"}</Link>
                 </Typography>
               )
             }
@@ -803,7 +623,6 @@ function App() {
             path='/search'
             element={
               <Search
-                language={language}
                 user={user}
                 users={users}
                 collections={collections}
@@ -819,10 +638,9 @@ function App() {
           />
         </Routes>
       </section>
-
       <footer className='app-footer-parent'>
         <Typography color={"white"}>Eng</Typography>
-        <Switch color='default' onChange={languageHandler} defaultChecked={language === "rus" ? true : false} />
+        <Switch color='default' onChange={languageHandler} defaultChecked={lang === "rus" ? true : false} />
         <Typography color={"white"} mr={"2rem"}>
           Rus
         </Typography>

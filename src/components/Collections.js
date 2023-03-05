@@ -1,22 +1,11 @@
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Dialog,
-  DialogActions,
-  DialogTitle,
-  Divider,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Divider, TextField, Typography } from "@mui/material";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Button, ButtonGroup, Dropdown, DropdownButton, Form, ListGroup, Modal } from "react-bootstrap";
+import { Button, ListGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+import CollectionModal from "./CollectionModal";
+import DeleteDialog from "./DeleteDialog";
 
 const lang = localStorage.getItem("language") || "eng";
 const categoriesEng = ["Books", "Cars", "Games", "Movies", "Wishlist", "Other"];
@@ -80,134 +69,16 @@ const Collections = (props) => {
                 >
                   {lang === "eng" ? "Remove" : "Удалить"}
                 </Button>
-
-                <Dialog
+                <DeleteDialog
                   open={props.deleteDialog}
                   onClose={props.deleteDialogHandler}
-                  aria-labelledby='alert-dialog-title'
-                  aria-describedby='alert-dialog-description'
-                  fullWidth={true}
-                  maxWidth='xs'
-                >
-                  <DialogTitle id='alert-dialog-title'>{"Are you sure?"}</DialogTitle>
-                  <DialogActions>
-                    <Button variant='btn btn-outline-primary' onClick={props.deleteDialogHandler}>
-                      {lang === "eng" ? "Cancel" : "Отмена"}
-                    </Button>{" "}
-                    <Button
-                      value={i}
-                      id='collectionModalCustomFieldRemoveBtn'
-                      variant='btn btn-outline-danger'
-                      onClick={props.collectionsHandler}
-                    >
-                      {lang === "eng" ? "Remove" : "Удалить"}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
+                  onClickCancel={props.deleteDialogHandler}
+                  onClickConfirm={() => props.collectionsHandler("collectionModalCustomFieldRemoveBtn")}
+                />
               </AccordionDetails>
             </Accordion>
           );
         });
-    };
-
-    const renderCollectionModal = () => {
-      return (
-        <Modal
-          show={props.collectionsModalVisibility}
-          onHide={props.collectionsModalHandler}
-          size='lg'
-          aria-labelledby='contained-modal-title-vcenter'
-          centered
-        >
-          <Modal.Header closeButton>
-            <Modal.Title id='contained-modal-title-vcenter' className='collection-modal-name-cont'>
-              <TextField
-                onChange={props.collectionsHandler}
-                id='collectionModalName'
-                label={lang === "eng" ? "Collection name" : "Название коллекции"}
-                variant='standard'
-                fullWidth={true}
-                defaultValue={colName}
-                inputProps={{ maxLength: 50 }}
-                error={colName ? false : true}
-                helperText={colName ? "" : lang === "eng" ? "Name required" : "Обязательное поле"}
-              />
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <InputLabel id='collectionModalCategoryLabel'> {lang === "eng" ? "Category" : "Категория"}</InputLabel>
-            <Select
-              labelId='demo-simple-select-label'
-              id='collectionModalCategory'
-              value={colCategory || ""}
-              fullWidth={true}
-              onChange={props.collectionsCategoryHandler}
-            >
-              {categories.map((c) => (
-                <MenuItem key={c} value={c}>
-                  {c}
-                </MenuItem>
-              ))}
-            </Select>
-
-            <Form.Group className='collection-modal-field-label' controlId='collectionModalDescription'>
-              <Form.Label className='collection-modal-field-label-name'>
-                {" "}
-                {lang === "eng" ? "Description" : "Описание"}
-              </Form.Label>
-              <Form.Control as='textarea' value={colDescription} onChange={props.collectionsHandler} rows={3} />
-            </Form.Group>
-            <Form.Group className='collection-modal-field-label' controlId='collectionModalCustomFields'>
-              <Form.Label className='collection-modal-field-label-name'>
-                {lang === "eng" ? "Custom fields for child items" : "Дополнительные поля для предметов"}
-              </Form.Label>
-              {renderCustomFieldList()}
-              <DropdownButton
-                as={ButtonGroup}
-                variant='btn btn-outline-dark'
-                size='sm'
-                title={lang === "eng" ? "Add new field" : "Добавить поле"}
-                id='collectionModalFieldAddBtn'
-              >
-                <Dropdown.Item id='collectionsModalFieldAdd-InputBtn' as='button' onClick={props.collectionsHandler}>
-                  {lang === "eng" ? "Short text" : "Короткий текст"}
-                </Dropdown.Item>
-                <Dropdown.Item id='collectionsModalFieldAdd-TextareaBtn' as='button' onClick={props.collectionsHandler}>
-                  {lang === "eng" ? "Long text" : "Длинный текст"}
-                </Dropdown.Item>
-                <Dropdown.Item id='collectionsModalFieldAdd-NumberBtn' as='button' onClick={props.collectionsHandler}>
-                  {lang === "eng" ? "Number" : "Число"}
-                </Dropdown.Item>
-                <Dropdown.Item id='collectionsModalFieldAdd-BooleanBtn' as='button' onClick={props.collectionsHandler}>
-                  {lang === "eng" ? "Checkbox" : "Галочка"}
-                </Dropdown.Item>
-                <Dropdown.Item id='collectionsModalFieldAdd-DateBtn' as='button' onClick={props.collectionsHandler}>
-                  {lang === "eng" ? "Date" : "Дата"}
-                </Dropdown.Item>
-              </DropdownButton>
-            </Form.Group>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button id='collectionModalCancelBtn' variant='btn btn-outline-dark' onClick={props.collectionsHandler}>
-              {lang === "eng" ? "Cancel" : "Отмена"}
-            </Button>
-            <Button
-              variant='btn btn-outline-primary'
-              id={props.addingCollection ? "collectionModalAddBtn" : "collectionModalSaveBtn"}
-              disabled={!colName || !colCategory ? true : false}
-              onClick={props.collectionsHandler}
-            >
-              {props.addingCollection
-                ? lang === "eng"
-                  ? "Add collection"
-                  : "Добавить коллекцию"
-                : lang === "eng"
-                ? "Save changes"
-                : "Применить изменения"}
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      );
     };
 
     const renderCollections = () => {
@@ -249,6 +120,11 @@ const Collections = (props) => {
                 </AccordionSummary>
                 <AccordionDetails>
                   <div className='collections-list-item-body-content-cont'>
+                    {c.image ? (
+                      <img src={c.image} alt={lang === "eng" ? "Collection cover" : "Изображение для коллекции"} />
+                    ) : (
+                      ""
+                    )}
                     <Typography className='collections-list-item-description' component={"div"}>
                       <ReactMarkdown>{c.description}</ReactMarkdown>
                     </Typography>
@@ -286,33 +162,12 @@ const Collections = (props) => {
                     ) : (
                       ""
                     )}
-
-                    <Dialog
+                    <DeleteDialog
                       open={props.deleteDialog}
                       onClose={props.deleteDialogHandler}
-                      aria-labelledby='alert-dialog-title'
-                      aria-describedby='alert-dialog-description'
-                      fullWidth={true}
-                      maxWidth='xs'
-                    >
-                      <DialogTitle id='alert-dialog-title'>
-                        {lang === "eng" ? "Are you sure?" : "Вы уверены?"}
-                      </DialogTitle>
-
-                      <DialogActions>
-                        <Button variant='btn btn-outline-primary' onClick={props.deleteDialogHandler}>
-                          {lang === "eng" ? "Cancel" : "Отмена"}
-                        </Button>{" "}
-                        <Button
-                          value={c._id}
-                          id='collectionsDialogDeleteConfirmationBtn'
-                          variant='btn btn-outline-danger'
-                          onClick={props.collectionsHandler}
-                        >
-                          {lang === "eng" ? "Delete" : "Удалить"}
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
+                      onClickCancel={props.deleteDialogHandler}
+                      onClickConfirm={props.collectionsHandler}
+                    />
                   </div>
                 </AccordionDetails>
               </Accordion>
@@ -331,7 +186,14 @@ const Collections = (props) => {
         <div className={props.homePage ? "collections-list-cont-home" : "collections-list-cont"}>
           <ListGroup as='ol' numbered={props.homePage ? false : true}>
             {renderCollections()}
-            {renderCollectionModal()}
+            <CollectionModal
+              props={props}
+              colName={colName}
+              categories={categories}
+              colCategory={colCategory}
+              colDescription={colDescription}
+              renderCustomFieldList={renderCustomFieldList}
+            />
             {props.homePage ? (
               ""
             ) : (

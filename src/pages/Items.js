@@ -3,18 +3,7 @@ import { Badge, Button, FormCheck } from "react-bootstrap";
 import Checkbox from "@mui/material/Checkbox";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import {
-  Collapse,
-  Dialog,
-  DialogActions,
-  DialogTitle,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-} from "@mui/material";
+import { Collapse, IconButton, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import { tableCellClasses } from "@mui/material/TableCell";
 import { Favorite, KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import { useState } from "react";
@@ -28,6 +17,7 @@ import Typography from "@mui/material/Typography";
 import { visuallyHidden } from "@mui/utils";
 import ItemModal from "../components/ItemModal";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+import DeleteDialog from "../components/DeleteDialog";
 
 const lang = localStorage.getItem("language") || "eng";
 
@@ -367,6 +357,14 @@ const Items = (props) => {
       <article className='items-parent'>
         <div className='items-table-cont'>
           <h2 className='items-table-collection-name'>{props.activeCollection?.name}</h2>
+          {props.activeCollection?.image ? (
+            <img
+              src={props.activeCollection?.image}
+              alt={lang === "eng" ? "Collection cover" : "Изображение для коллекции"}
+            />
+          ) : (
+            ""
+          )}
           <div className='items-table-wrapper'>
             <Table
               sx={{
@@ -433,26 +431,12 @@ const Items = (props) => {
                 >
                   {lang === "eng" ? "Remove selected" : "Удалить выбранные"}
                 </Button>
-
-                <Dialog
+                <DeleteDialog
                   open={props.deleteDialogItems}
                   onClose={props.deleteDialogItemsHandler}
-                  aria-labelledby='alert-dialog-title'
-                  aria-describedby='alert-dialog-description'
-                  fullWidth={true}
-                  maxWidth='xs'
-                >
-                  <DialogTitle id='alert-dialog-title'>{lang === "eng" ? "Are you sure?" : "Вы уверены?"}</DialogTitle>
-
-                  <DialogActions>
-                    <Button variant='btn btn-outline-primary' onClick={props.deleteDialogItemsHandler}>
-                      {lang === "eng" ? "Cancel" : "Отмена"}
-                    </Button>{" "}
-                    <Button id='itemsTableControlsRemove' variant='btn btn-outline-danger' onClick={props.itemsHandler}>
-                      {lang === "eng" ? "Delete" : "Удалить"}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
+                  onClickCancel={props.deleteDialogItemsHandler}
+                  onClickConfirm={props.itemsHandler}
+                />
               </div>
             ) : (
               ""

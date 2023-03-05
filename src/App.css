@@ -5,9 +5,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-
   font-family: "Roboto", sans-serif;
-
   background-color: #222222;
 }
 
@@ -23,7 +21,6 @@
 .app-header {
   width: 100%;
   height: 100%;
-  /* border-bottom: 2px solid white; */
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -58,13 +55,6 @@
   width: 20rem;
   transition: 300ms;
 }
-/* .navbar-search--active {
-  margin: 0 1rem 0 1rem;
-  width: 20rem;
-  transition: 300ms;
-} */
-.navbar-search__btn {
-}
 
 .navbar-controls-cont {
   width: 50%;
@@ -80,24 +70,13 @@
 }
 
 .app-menu-top__btn {
-  /* height: 2.5rem; */
-  /* width: 7rem; */
   margin: 0.5rem 1rem 0.5rem 0rem;
-  /* border-radius: 5px; */
   color: white;
   font-size: 20px;
   font-weight: 500;
   text-transform: uppercase;
-  /* background-color: #222222; */
-  /* border: 1px solid white; */
-
   transition: 300ms;
 }
-
-/* .app-menu-top__btn:hover {
-  opacity: 0.7;
-  background-color: #000000;
-} */
 
 .navbar__dropdown {
   min-width: 7rem;
@@ -107,21 +86,17 @@
 
 .dropdown-toggle {
   font-size: 20px;
-  /* text-align: right; */
 }
 
-/* /////////////////////////////////// */
 .app-body-parent {
   height: 100vh;
-  /* min-height: 30rem; */
-  /* max-height: 65rem; */
   width: 100%;
   max-width: 95rem;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: auto;
-background-color: white;
+  background-color: white;
 }
 
 .modal-cont {
@@ -129,20 +104,15 @@ background-color: white;
   max-width: 50rem;
   height: 40rem;
   margin: 10rem 0 0 0;
-  /* align-self: center; */
   position: absolute;
   box-shadow: 0px 0px 23px black;
   background-color: white;
-}
-
-.modal-dialog {
 }
 
 .modal-dialog-header {
   height: 5rem;
   display: flex;
   justify-content: center;
-  /* padding: 0 3rem 0 3rem; */
 }
 
 #modal-user-selection {
@@ -170,21 +140,13 @@ background-color: white;
 
 .modal-dialog-footer {
   height: 5rem;
-  /* width: 80%; */
 }
-
-.compose-message-btn {
-}
-
-/* /////////////////////////////////// */
 
 .app-main-cont-logreg {
   width: 100%;
   min-height: 30rem;
-  /* height: 100%; */
   display: flex;
   flex-direction: column;
-  /* justify-content: center; */
   align-items: center;
   background-color: white;
 }
@@ -197,7 +159,6 @@ background-color: white;
   margin: 2rem 0 0 0;
 }
 
-/* /////////////////////////////////// */
 .app-home-parent {
   width: 100%;
   height: 100%;
@@ -215,7 +176,7 @@ background-color: white;
 }
 
 .tag-cloud-tag {
-  margin: 0 0.5rem 0 0 !important; 
+  margin: 0 0.5rem 0 0 !important;
 }
 
 .account-parent {
@@ -255,7 +216,6 @@ background-color: white;
   margin: 1rem 0 1rem 1rem;
 }
 
-
 .collections-parent {
   width: 100%;
   margin: 0 0 1rem 0;
@@ -278,22 +238,15 @@ background-color: white;
 .collections-list-cont-home {
   width: 94%;
   height: 100%;
-  
 }
 
 .collections-list-item {
-
   border: none;
   display: flex;
   align-items: center;
 }
 
-.collections-list-item-accordion {
-  /* margin: 0 1rem 0 1rem; */
-  /* width: 100%; */
-}
-
-.collections-list-item-summary-cont{
+.collections-list-item-summary-cont {
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -318,7 +271,6 @@ background-color: white;
   height: 2rem;
   border-left: 1px solid rgb(168, 168, 168);
 }
-
 
 .collections-list-item-name {
   font-size: 20px;
@@ -352,7 +304,6 @@ background-color: white;
 }
 
 .collections-list-item-body-controls {
-  /* width: 100%; */
   display: flex;
   justify-content: flex-end;
 }
@@ -374,10 +325,8 @@ background-color: white;
 #collectionModalDescription {
   resize: none;
 }
-
-.collection-modal-field-label {
-  /* display: flex;
-  flex-direction: column; */
+#collectionModalRemoveImageBtn {
+  margin: 0 0 0 1rem;
 }
 
 .collection-modal-field-label-name {
@@ -388,18 +337,29 @@ background-color: white;
   margin: 1rem 0 0 0;
 }
 
+.modal-body img,
+.collections-list-item-body-content-cont img,
+.items-table-cont img {
+  height: 100%;
+  max-height: 400px;
+  margin: 1rem 0 1rem 0;
+}
+
+.items-table-cont img {
+  margin-left: 1rem;
+}
+
 .collection-modal-custom-field-item {
   width: 30%;
 }
 
 .collection-modal-custom-field-item-info-cont {
   width: 60%;
-    max-width: 26rem;
+  max-width: 26rem;
   display: flex;
 }
 
 .collection-modal-custom-field-item-info {
-  /* margin: 0 1rem 0 0; */
   font-size: 16px;
   font-weight: 400;
 }
@@ -424,39 +384,20 @@ background-color: white;
 }
 
 .items-table-cont {
-  /* min-height: 20rem; */
-  /* height: 100%; */
-  /* max-height: 60rem; */
   width: 90%;
-  /* TODO not working correctly */
   margin: 0 0 2rem 0;
   overflow: auto;
-
 }
 
 .items-table-collection-name {
   margin: 0 0 0 1rem;
 }
 
-.items-table-wrapper {
-
-  /* overflow-x: auto; */
-}
-
-.items-parent tr {
-  /* height: 1rem; */
-  /* white-space: nowrap; */
-  /* background-color: #000000; */
-}
-
 .items-parent td {
   max-width: 20rem;
 }
 
-.items-table-element {
-
-}
-.items-table-element-header-cont{
+.items-table-element-header-cont {
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -469,11 +410,6 @@ background-color: white;
   min-height: 5rem;
   display: flex;
   flex-direction: column;
-  /* border-top: 1px solid lightgrey; */
-}
-
-.items-table-element-collapse-body-data {
-  /* width: 70%; */
 }
 
 .items-table-element-collapse-body-comments-cont {
@@ -521,32 +457,14 @@ background-color: white;
   display: flex;
   justify-content: flex-end;
   align-self: flex-end;
-
 }
 
 .accordion-button {
   padding: 0 0 1rem 0;
 }
 
-
-
 .items-table-element-likes {
   margin: 0 1rem 0 0;
-}
-
-.items-table-column-tags {
-  /* width: 50%; */
-  /* width: 500rem; */
-}
-
-.rti--container {
-  --rti-bg: "#fff",
-  --rti-border: "#3182ce",
-  --rti-main: "#3182ce",
-  --rti-radius: "0.375rem",
-  --rti-s: "0.5rem",
-  --rti-tag: "#edf2f7",
-  --rti-tag-remove: "#e53e3e",
 }
 
 .items-table-controls-cont {
@@ -564,7 +482,8 @@ background-color: white;
   max-width: 26rem;
 }
 
-.item-add-field-label, .collection-modal-field-label {
+.item-add-field-label,
+.collection-modal-field-label {
   width: 100%;
   margin: 1rem 0 0.5rem 0;
 }
@@ -576,8 +495,6 @@ background-color: white;
   overflow: auto;
 }
 
-/* /////////////////////////////////// */
-
 .app-footer-parent {
   min-height: 5rem;
   width: 100%;
@@ -585,7 +502,6 @@ background-color: white;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-
   border-top: 5px solid #222222;
   background-color: #333333;
 }

@@ -2,7 +2,7 @@ import { Chip, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { TagCloud } from "react-tagcloud";
 import Collections from "../components/Collections";
-import ItemsNewest from "../components/ItemsNewest";
+import ItemsNewest from "../components/ItemsList";
 
 const lang = localStorage.getItem("language") || "eng";
 
