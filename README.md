@@ -11,7 +11,6 @@
 - Administrator can edit any collection or item
 - Leave comments and likes on items. Only admin, comment author or item creator can remove comments.
 - Search for items by text or by clicking a tag
--
 
 ## Created on MERN stack.
 
